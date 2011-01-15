@@ -7,65 +7,110 @@
 -- http://www.gnu.org/licenses/gpl.html
 --
 
-
 import Network
 import System.IO
 import System.Exit
 import Text.Printf
 import Data.List
+import Control.Arrow
+import Control.Monad.Reader
+import Control.Exception
+import Prelude hiding (catch)
+
 
 server = "irc.kittenz.pdx.edu"
 port   = 6667
 chan   = "#test"
 nick   = "millerbot"
 
+
+-- monad transformer to layer the Bot data type
+type Net = ReaderT Bot IO
+
+-- wrapper data type to work with socket
+data Bot = Bot { socket :: Handle }
+
+
 -- main function:
--- connect to the server, then set the buffering on the socket off. 
--- send messages back to the IRC server using write
-main = do
+-- bracket takes 3 arguments: 
+-- 1)a function to connect to the server 
+-- 2)a function to disconnect
+-- 3)main loop to run in between
+main :: IO ()
+main = bracket connect disconnect loop
+ where
+  disconnect = hClose . socket
+  loop st    = catch (runReaderT run st) (const $ return ())
+  
+
+-- connect function:
+-- Connect to the server and return the initial bot state
+connect :: IO Bot
+connect = notify $ do
   h <- connectTo server (PortNumber (fromIntegral port))
   hSetBuffering h NoBuffering
-  write h "NICK" nick
-  write h "USER" (nick++": a useless bot")
-  write h "JOIN" chan
-  listen h
+  return (Bot h)
+ where
+  notify a = bracket_
+             (printf "Connecting to %s ... " server >> hFlush stdout)
+             (putStrLn "done.")
+             a
 
--- write function:
--- Input: handle(socket), two IRC commands, arguments
--- Uses hPrintf to build an IRC message and write it over the wire to the server. 
--- For debugging purposes also prints the message to standard output.
-write :: Handle -> String -> String -> IO ()
-write h s t = do
-  hPrintf h "%s %s\r\n" s t
-  printf    "> %s %s\n" s t
+
+-- run function:
+-- Now in the Net monad, meaning connected.
+-- Join a channel, start processing commands.
+run :: Net ()
+run = do
+  write "NICK" nick
+  write "USER" (nick ++ " 0 * :a useless bot")
+  write "JOIN" chan
+  asks socket >>= listen
+
 
 -- listen function:
--- Input: handle
 -- 1)pongs when ping is received, so as to stay connected
 -- 2)clean removes leading ':' and everything up to the next ':'
 -- 3)eval handles bot commands
-listen :: Handle -> IO ()
+listen :: Handle -> Net ()
 listen h = forever $ do
-  t <- hGetLine h
-  let s = init t
-  if ping s then pong s else eval h (clean s)
-  putStrLn s
+  s <- init `fmap` io (hGetLine h)
+  io (putStrLn s)
+  if ping s then pong s else eval (clean s)
  where
-  forever a = a >> forever a
-  
+  forever a = a >> forever a  
   clean     = drop 1 . dropWhile (/= ':') . drop 1
-  
   ping x    = "PING :" `isPrefixOf` x
-  pong x    = write h "PONG" (':' : drop 6 x)
+  pong x    = write "PONG" (':' : drop 6 x)
+
 
 -- eval function:
--- List of available commands.
-eval :: Handle -> String -> IO ()
-eval h     "!quit"                = write h "QUIT" ":Exiting" >> exitWith ExitSuccess
-eval h x | "!echo" `isPrefixOf` x = privmsg h (drop 6 x)
-eval _   _                        = return ()  -- ignore everything else
+-- Handle commands.
+eval :: String -> Net ()
+eval     "!quit"                = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
+eval x | "!echo" `isPrefixOf` x = privmsg (drop 6 x)
+eval _                          = return ()  -- ignore everything else
+
 
 -- privmsg function:
--- wrapper for write, particularly for doing privmsg command
-privmsg :: Handle -> String -> IO ()
-privmsg h s = write h "PRIVMSG" (chan ++ " :" ++ s)
+-- wrapper for write, sends message to channel
+privmsg :: String -> Net ()
+privmsg s = write "PRIVMSG" (chan ++ " :" ++ s)
+
+
+-- write function:
+-- Uses Net monad for sending data to server. Must be connected to do so.
+-- Uses hPrintf to build an IRC message and write it to the server. 
+-- For debugging purposes also prints the message to standard output.
+write :: String -> String -> Net ()
+write s t = do
+  h <- asks socket
+  io $ hPrintf h "%s %s\r\n" s t
+  io $ printf    "> %s %s\n" s t
+
+
+-- io function:
+-- lift an IO expression into the Net monad 
+-- making that IO function available to code in the Net monad
+io :: IO a -> Net a
+io = liftIO
