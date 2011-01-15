@@ -10,7 +10,9 @@
 
 import Network
 import System.IO
+import System.Exit
 import Text.Printf
+import Data.List
 
 server = "irc.kittenz.pdx.edu"
 port   = 6667
@@ -39,10 +41,31 @@ write h s t = do
 
 -- listen function:
 -- Input: handle
--- In an infinite loop, read lines of text from the network and print them
+-- 1)pongs when ping is received, so as to stay connected
+-- 2)clean removes leading ':' and everything up to the next ':'
+-- 3)eval handles bot commands
 listen :: Handle -> IO ()
 listen h = forever $ do
-  s <- hGetLine h
+  t <- hgetLine h
+  let s = init t
+  if ping s then pong s else eval h (clean s)
   putStrLn s
  where
-  forever a = do a; forever a
+  forever a = a >> forever a
+  
+  clean     = drop 1 . dropWhile (/= ':') . drop 1
+  
+  ping x    = "PING :" `isPrefixOf` x
+  pong x    = write h "PONG" (':' : drop 6 x)
+
+-- eval function:
+-- List of available commands.
+eval :: Handle -> String -> IO ()
+eval h     "!quit"                = write h "QUIT" ":Exiting" >> exitWith ExitSuccess
+eval h x | "!echo" `isPrefixOf` x = privmsg h (drop 4 x)
+eval _   _                        = return ()  -- ignore everything else
+
+-- privmsg function:
+-- wrapper for write, particularly for doing privmsg command
+privmsg :: Handle -> String -> IO ()
+privmsg h s = write h "PRIVMSG" (chan ++ " :" ++ s)
