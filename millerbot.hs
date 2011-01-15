@@ -40,7 +40,7 @@ main :: IO ()
 main = bracket connect disconnect loop
  where
   disconnect = hClose . socket
-  loop st    = catch (runReaderT run st) (const $ return ())
+  loop st    = runReaderT run st
   
 
 -- connect function:
