@@ -1,7 +1,5 @@
-HOST='irc.cat.pdx.edu'
-PORT=6697
-NICK='millerbot'
-IDENT=NICK
-REALNAME=NICK
-OWNER='millertime'
-CHANNEL='#millerbot-testing'
+HOST=irc.cat.pdx.edu
+PORT=6667
+NICK=millerbot
+OWNER=millertime
+CHANNEL=millerbot-testing
