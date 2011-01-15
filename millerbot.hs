@@ -10,6 +10,7 @@
 import Network
 import System.IO
 import System.Exit
+import System.Time
 import Text.Printf
 import Data.List
 import Control.Arrow
@@ -18,9 +19,9 @@ import Control.Exception
 import Prelude hiding (catch)
 
 
-server = "irc.kittenz.pdx.edu"
+server = "irc.cat.pdx.edu"
 port   = 6667
-chan   = "#test"
+chan   = "#millerbot-testing"
 nick   = "millerbot"
 
 
@@ -28,7 +29,7 @@ nick   = "millerbot"
 type Net = ReaderT Bot IO
 
 -- wrapper data type to work with socket
-data Bot = Bot { socket :: Handle }
+data Bot = Bot { socket :: Handle, starttime :: ClockTime }
 
 
 -- main function:
@@ -47,9 +48,10 @@ main = bracket connect disconnect loop
 -- Connect to the server and return the initial bot state
 connect :: IO Bot
 connect = notify $ do
+  t <- getClockTime
   h <- connectTo server (PortNumber (fromIntegral port))
   hSetBuffering h NoBuffering
-  return (Bot h)
+  return (Bot h t)
  where
   notify a = bracket_
              (printf "Connecting to %s ... " server >> hFlush stdout)
@@ -87,9 +89,12 @@ listen h = forever $ do
 -- eval function:
 -- Handle commands.
 eval :: String -> Net ()
-eval     "!quit"                = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
-eval x | "!echo" `isPrefixOf` x = privmsg (drop 6 x)
-eval _                          = return ()  -- ignore everything else
+eval     "!uptime"               = uptime >>= privmsg
+eval x | "!join"  `isPrefixOf` x = write "JOIN" (drop 6 x)
+eval x | "!leave" `isPrefixOf` x = write "PART" (drop 7 x)
+eval     "!quit"                 = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
+eval x | "!echo"  `isPrefixOf` x = privmsg (drop 6 x)
+eval _                           = return ()  -- ignore everything else
 
 
 -- privmsg function:
@@ -107,6 +112,30 @@ write s t = do
   h <- asks socket
   io $ hPrintf h "%s %s\r\n" s t
   io $ printf    "> %s %s\n" s t
+
+
+-- uptime function:
+-- Calculate and pretty print the uptime
+uptime :: Net String
+uptime = do
+  now   <- io getClockTime
+  zero  <- asks starttime
+  return . pretty $ diffClockTimes now zero
+
+
+-- pretty function:
+-- Pretty print the date in '1d 9h 9m 17s' format
+pretty :: TimeDiff -> String
+pretty td = join . intersperse " " . filter (not . null) . map f $
+  [(years        ,"y") ,(months `mod` 12,"m")
+  ,(days `mod` 28,"d") ,(hours  `mod` 24,"h")
+  ,(mins `mod` 60,"m") ,(secs   `mod` 60,"s")]
+ where
+  secs     = abs $ tdSec td  ; mins    = secs     `div` 60
+  hours    = mins `div` 60   ; days    = hours    `div` 24
+  months   = days `div` 28   ; years   = months   `div` 12
+  f (i,s) | i == 0    = []
+          | otherwise = show i ++ s
 
 
 -- io function:
