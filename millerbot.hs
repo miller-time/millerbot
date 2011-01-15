@@ -16,7 +16,7 @@ import Data.List
 
 server = "irc.kittenz.pdx.edu"
 port   = 6667
-chan   = "#kittenz"
+chan   = "#test"
 nick   = "millerbot"
 
 -- main function:
@@ -46,7 +46,7 @@ write h s t = do
 -- 3)eval handles bot commands
 listen :: Handle -> IO ()
 listen h = forever $ do
-  t <- hgetLine h
+  t <- hGetLine h
   let s = init t
   if ping s then pong s else eval h (clean s)
   putStrLn s
@@ -62,7 +62,7 @@ listen h = forever $ do
 -- List of available commands.
 eval :: Handle -> String -> IO ()
 eval h     "!quit"                = write h "QUIT" ":Exiting" >> exitWith ExitSuccess
-eval h x | "!echo" `isPrefixOf` x = privmsg h (drop 4 x)
+eval h x | "!echo" `isPrefixOf` x = privmsg h (drop 6 x)
 eval _   _                        = return ()  -- ignore everything else
 
 -- privmsg function:
