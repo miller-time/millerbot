@@ -26,7 +26,7 @@ class MillerBot(irc.IRCClient):
         else:
             prefix = ''
         if prefix:
-            cmd = commands.action(msg)
+            cmd = action(msg)
             self.msg(self.factory.channel, cmd)
         print msg
 
