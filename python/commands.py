@@ -13,5 +13,5 @@ def quote():
     st = f.read()
     f.close()
     quotes = st.split('\n')
-    i = random.randint(0,len(quotes))
+    i = random.randint(0,len(quotes)-1)
     return quotes[i]
