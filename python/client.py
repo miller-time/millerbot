@@ -2,6 +2,7 @@
 
 from twisted.words.protocols import irc
 from twisted.internet import protocol
+from commands import *
 
 class MillerBot(irc.IRCClient):
     def _get_nickname(self):
@@ -24,7 +25,8 @@ class MillerBot(irc.IRCClient):
         else:
             prefix = ''
         if prefix:
-            self.msg(self.factory.channel, prefix + msg)
+            cmd = commands.action(msg)
+            self.msg(self.factory.channel, cmd)
 
 class MillerBotFactory(protocol.ClientFactory):
     protocol = MillerBot
