@@ -8,7 +8,7 @@ def action(msg):
     elif msg.lower() == 'quote':
         return quote()
 
-def getrandomquote():
+def quote():
     f = open("quotes")
     quotes = f.read()
     f.close()
