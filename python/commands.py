@@ -10,8 +10,8 @@ def action(msg):
 
 def quote():
     f = open("quotes")
-    quotes = f.read()
+    st = f.read()
     f.close()
-    quotes.split('\n')
+    quotes = st.split('\n')
     i = random.randint(0,len(quotes))
     return quotes[i]
