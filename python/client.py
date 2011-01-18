@@ -12,6 +12,7 @@ class MillerBot(irc.IRCClient):
 
     def signedOn(self):
         self.join(self.factory.channel)
+        print("self.factory.channel: %s" % self.factory.channel)
         print "Signed on as %s." % (self.nickname,)
 
     def joined(self, channel):
@@ -20,14 +21,19 @@ class MillerBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         if not user:
             return
-        if msg.startswith(self.nickname):
-            msg = re.compile(self.nickname + "[:,]* ?", re.I).sub('', msg)
+        if msg.startswith('!'):
+            msg = re.compile("![:,]* ?", re.I).sub('', msg)
             prefix = "%s: " % (user.split('!', 1)[0], )
         else:
             prefix = ''
         if prefix:
-            cmd = action(msg)
-            self.msg(self.factory.channel, cmd)
+            if msg.startswith("join"):
+                self.join(msg[5:])
+            elif msg.startswith("leave"):
+                self.part(msg[6:])
+            else:    
+                cmd = action(msg)
+                self.msg(channel, cmd)
         print msg
 
 class MillerBotFactory(protocol.ClientFactory):
