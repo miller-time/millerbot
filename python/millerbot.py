@@ -17,7 +17,15 @@ class MillerBot(irc.IRCClient):
         print "Joined %s." % (channel,)
 
     def privmsg(self, user, channel, msg):
-        print msg
+        if not user:
+            return
+        if msg.startswith(self.nickname):
+            msg = re.compile(self.nickname + "[:,]* ?", re.I).sub('', msg)
+            prefix = "%s: " % (user.split('!', 1)[0], )
+        else:
+            prefix = ''
+        if prefix:
+            self.msg(self.factory.channel, prefix + msg)
 
 class MillerBotFactory(protocol.ClientFactory):
     protocol = MillerBot
