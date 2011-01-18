@@ -4,7 +4,7 @@ import random
 
 def action(msg):
     if msg.startswith('echo'):
-        return msg[6:].strip()
+        return msg[5:].strip()
     elif msg.lower() == 'quote':
         return quote()
 
