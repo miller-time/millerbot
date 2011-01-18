@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import bot
+from bot import Bot
 
 def main():
     miller_bot = Bot()

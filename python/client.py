@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import re
 from twisted.words.protocols import irc
 from twisted.internet import protocol
 from commands import *
@@ -27,6 +28,7 @@ class MillerBot(irc.IRCClient):
         if prefix:
             cmd = commands.action(msg)
             self.msg(self.factory.channel, cmd)
+        print msg
 
 class MillerBotFactory(protocol.ClientFactory):
     protocol = MillerBot
