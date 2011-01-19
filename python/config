@@ -1,5 +1,5 @@
 HOST=irc.cat.pdx.edu
-PORT=6667
+PORT=9999
 NICK=millerbot
 OWNER=millertime
 CHANNEL=millerbot-testing

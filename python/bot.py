@@ -2,7 +2,7 @@
 
 import re
 from twisted.internet import reactor
-from client import MillerBotFactory
+from client import MillerBotFactory,MillerBotContextFactory
 
 class Bot:
     def __init__(self):
@@ -27,5 +27,5 @@ class Bot:
             self.nick = match.group(1)
         
     def go(self):
-        reactor.connectTCP(self.host,self.port,MillerBotFactory('#'+self.chan,self.nick))
+        reactor.connectSSL(self.host,self.port,MillerBotFactory('#'+self.chan,self.nick),MillerBotContextFactory())
         reactor.run()
