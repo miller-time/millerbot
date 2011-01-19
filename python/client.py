@@ -6,6 +6,14 @@ from twisted.words.protocols import irc
 from twisted.internet import protocol,ssl
 from commands import *
 
+def parse_send(msg):
+    """Simple parser to split a channel name from a message"""
+    print("Parsing msg: %s" % msg)
+    msgList = msg.split(' ')
+    channel = msgList[1]
+    message = ' '.join(msgList[2:])
+    return channel,message
+
 class MillerBot(irc.IRCClient):
     def _get_nickname(self):
         return self.factory.nickname
@@ -38,11 +46,14 @@ class MillerBot(irc.IRCClient):
         if prefix:
             if msg.startswith("join"):
                 self.join(msg[5:])
+            elif msg.startswith("send") and user.startswith("millertime!thatguy"):
+                chan,message = parse_send(msg)
+                self.msg(chan,message)
             elif msg.startswith("leave") and user.startswith("millertime!thatguy"):
                 self.part(msg[6:])
             elif msg.startswith("quit") and user.startswith("millertime!thatguy"):
                 self.quit("Bye for now.")
-            else:    
+            elif msg:    
                 cmd = action(msg)
                 self.msg(channel, cmd)
         print msg
@@ -56,7 +67,6 @@ class MillerBotFactory(protocol.ClientFactory):
 
     def clientConnectionLost(self, connector, reason):
         print "Lost connection (%s)" % (reason,)
-        sys.exit(0)
 
     def clientConnectionFailed(self, connector, reason):
         print "Could not connect: %s" % (reason,)
