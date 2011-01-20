@@ -13,13 +13,15 @@ def action(user,chan,msg):
         return (chan,quote())
     elif msg.lower().startswith('halp'):
         return (chan,halp(msg[4:].strip()))
-    elif msg.endswith("?"):
-        return (chan,eightball())
+    elif msg.startswith("calc"):
+        return (chan,calc(msg[4:].strip()))
     # admin commands
     elif msg.startswith("send") and user == "millertime":
         return parse_send(msg)
     elif msg.startswith("send"):
         return (chan,user + ": You don't have permission to do that.")
+    elif msg.endswith("?"):
+        return (chan,eightball())
 
 def parse_send(msg):
     """Simple parser to split a channel name from a message"""
@@ -29,6 +31,8 @@ def parse_send(msg):
     return channel,message
     
 def halp(command):
+    if command == "calc":
+        return "Syntax: !calc [expression]"
     if command == "echo":
         return "Syntax: !echo [message]"
     elif command == "quote":
@@ -41,6 +45,9 @@ def halp(command):
         return "Syntax: [question]?"
     else:
         return "Available commands: !echo !quote !addquote !join !halp"
+
+def calc(expr):
+    return str(eval(expr))
 
 def quote():
     f = open("quotes")
