@@ -57,7 +57,8 @@ class MillerBot(irc.IRCClient):
                 self.quit("Bye for now.")
             elif msg:    
                 cmd = action(msg)
-                self.msg(channel, cmd)
+                if cmd:
+                    self.msg(channel, cmd)
         print msg
 
 class MillerBotFactory(protocol.ClientFactory):

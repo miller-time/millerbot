@@ -7,7 +7,7 @@ def action(msg):
         return msg[5:].strip()
     elif msg.lower() == 'quote':
         return quote()
-    elif msg.lower() == 'help':
+    elif msg.lower() == 'halp':
         return halp()
     elif msg.endswith("?"):
         return eightball()
