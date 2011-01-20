@@ -2,4 +2,5 @@ HOST=irc.cat.pdx.edu
 PORT=9999
 NICK=millerbot
 OWNER=millertime
-CHANNEL=millerbot-testing
+DEFCHAN=millerbot-testing
+CHANNELS=#cs386,#python

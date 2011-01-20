@@ -5,21 +5,21 @@ import random
 def action(user,chan,msg):
     # simple commands
     if msg.startswith('echo'):
-        if chan[0] != '#':
+        if chan[0] != '#':    # whispered
             return (user,msg[5:].strip())
-        else:
+        else:                 # said in channel
             return (chan,msg[5:].strip())
     elif msg.lower() == 'quote':
         return (chan,quote())
-    elif msg.lower() == 'halp':
-        return (chan,halp())
+    elif msg.lower().startswith('halp'):
+        return (chan,halp(msg[4:].strip()))
     elif msg.endswith("?"):
         return (chan,eightball())
     # admin commands
-    elif msg.startswith("addquote"):
-        return ("millertime","Add quote: " + msg[9:] + "?")
     elif msg.startswith("send") and user == "millertime":
         return parse_send(msg)
+    elif msg.startswith("send"):
+        return (chan,user + ": You don't have permission to do that.")
 
 def parse_send(msg):
     """Simple parser to split a channel name from a message"""
@@ -28,8 +28,19 @@ def parse_send(msg):
     message = ' '.join(msgList[2:])
     return channel,message
     
-def halp():
-    return "Available commands: !echo !quote !halp"
+def halp(command):
+    if command == "echo":
+        return "Syntax: !echo [message]"
+    elif command == "quote":
+        return "Syntax: !quote"
+    elif command == "addquote":
+        return "Syntax: !addquote [quote]"
+    elif command == "join":
+        return "Syntax: !join [channel] [channel key]"
+    elif command == "?":
+        return "Syntax: [question]?"
+    else:
+        return "Available commands: !echo !quote !addquote !join !halp"
 
 def quote():
     f = open("quotes")

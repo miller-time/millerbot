@@ -19,7 +19,7 @@ class Bot:
         match = re.search(r'PORT=(.+)\n', st)
         if match:
             self.port = int(match.group(1))
-        match = re.search(r'CHANNEL=(.+)\n', st)
+        match = re.search(r'DEFCHAN=(.+)\n', st)
         if match:
             self.chan = match.group(1)
         match = re.search(r'NICK=(.+)\n', st)
