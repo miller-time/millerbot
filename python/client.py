@@ -6,14 +6,6 @@ from twisted.words.protocols import irc
 from twisted.internet import protocol,ssl
 from commands import *
 
-def parse_send(msg):
-    """Simple parser to split a channel name from a message"""
-    print("Parsing msg: %s" % msg)
-    msgList = msg.split(' ')
-    channel = msgList[1]
-    message = ' '.join(msgList[2:])
-    return channel,message
-
 class MillerBot(irc.IRCClient):
     def _get_nickname(self):
         return self.factory.nickname
@@ -38,28 +30,23 @@ class MillerBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         if not user:
             return
-        if msg.startswith('!'):
-            msg = re.compile("![:,]* ?", re.I).sub('', msg)
-            prefix = "%s: " % (user.split('!', 1)[0], )
-        else:
-            prefix = ''
-        if prefix:
-            if msg.startswith("join"):
-                self.join(msg[5:])
-            elif msg.startswith("addquote"):
-                self.msg("millertime","Add quote: " + msg[9:] + "?")
-            elif msg.startswith("send") and user.startswith("millertime!thatguy"):
-                chan,message = parse_send(msg)
-                self.msg(chan,message)
-            elif msg.startswith("leave") and user.startswith("millertime!thatguy"):
-                self.part(msg[6:])
-            elif msg.startswith("quit") and user.startswith("millertime!thatguy"):
-                self.quit("Bye for now.")
-            elif msg:    
-                cmd = action(msg)
-                if cmd:
-                    self.msg(channel, cmd)
-        print msg
+        username = user.split('!', 1)[0]
+        # non-message commands
+        if msg.startswith("!join"):
+            self.join(msg[6:])
+        elif msg.startswith("!leave") and username == "millertime":
+            print("Leaving " + msg[7:])
+            self.part(msg[7:])
+        elif msg.startswith("!quit") and username == "millertime":
+            print("Quitting")
+            self.quit("Bye for now.")
+        # all other commands
+        elif msg.startswith('!'):
+            to_who,cmd = action(username,channel,msg[1:])
+            if cmd:
+                print("Telling " + to_who + " " + cmd)
+                self.msg(to_who,cmd)
+        print username + ": " + msg
 
 class MillerBotFactory(protocol.ClientFactory):
     protocol = MillerBot
