@@ -46,6 +46,8 @@ class MillerBot(irc.IRCClient):
         if prefix:
             if msg.startswith("join"):
                 self.join(msg[5:])
+            elif msg.startswith("addquote"):
+                self.msg("millertime","Add quote: " + msg[9:] + "?")
             elif msg.startswith("send") and user.startswith("millertime!thatguy"):
                 chan,message = parse_send(msg)
                 self.msg(chan,message)
