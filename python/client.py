@@ -59,6 +59,10 @@ class MillerBot(irc.IRCClient):
         elif msg.startswith("!addquote"):
             self.msg("millertime","Add quote: " + msg[9:] + "?")
             self.msg(channel,username + ": Request for approval sent.")
+        elif msg.startswith("!shows list"):
+            showlist = list_shows()
+            for show in showlist:
+                self.msg(channel, show)
         # all other commands
         elif msg.startswith('!'):
             to_who,cmd = action(username,channel,msg[1:])

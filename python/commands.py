@@ -1,16 +1,14 @@
 #!/usr/bin/python
 
 import random,re,math
+from datetime import date
 
 def action(user,chan,msg):
     # simple commands
-    if msg.startswith('echo'):
-        if chan[0] != '#':    # whispered
-            return (user,msg[5:].strip())
-        else:                 # said in channel
-            return (chan,msg[5:].strip())
-    elif msg.lower() == 'quote':
+    if msg.lower() == 'quote':
         return (chan,quote())
+    elif msg.lower().startswith('shows'):
+        return (chan,shows(msg[5:].strip()))
     elif msg.lower().startswith('halp'):
         return (chan,halp(msg[4:].strip()))
     elif msg.startswith("calc"):
@@ -33,8 +31,10 @@ def parse_send(msg):
 def halp(command):
     if command == "calc":
         return "Syntax: !calc [expression]. Mathematical expression. Can include ceil,fabs,factorial,floor,exp,pow,sqrt,log,cos,sin,tan,degrees,radians,pi,e."
-    if command == "echo":
-        return "Syntax: !echo [message]. Stupid echo command."
+    elif command == "shows":
+        return "Syntax: !shows (list | add). Shows I want to go see. Feel free to add to the list. !halp shows add for more info."
+    elif command == "shows add":
+        return "Syntax: !shows add MMDDYYYY [Description]"
     elif command == "quote":
         return "Syntax: !quote. Display a random quote from someone famous."
     elif command == "addquote":
@@ -44,7 +44,7 @@ def halp(command):
     elif command == "?":
         return "Syntax: [question]? Shake the magic eightball..."
     else:
-        return "Available commands: !calc !echo !quote !addquote !join !halp. Type !halp [command] for more info"
+        return "Available commands: !calc !shows !quote !addquote !join !halp. Type !halp [command] for more info"
 
 def calc(expr):
     print("Attempting to parse %s" % expr)
@@ -93,6 +93,38 @@ def quote():
     quotes = st.split('\n')
     i = random.randint(0,len(quotes)-1)
     return quotes[i]
+
+def shows(command):
+    if command.startswith("add"):
+        show_string = command[3:].strip()
+        show_date = date(int(show_string[4:8]),int(show_string[:2]),int(show_string[2:4]))
+        shows_d = {}
+        shows_d[show_date] = show_string + '\n'
+        f = open("shows")
+        for line in f:
+            if len(line) >= 10:
+                sd = date(int(line[4:8]),int(line[:2]),int(line[2:4]))
+                shows_d[sd] = line
+        f.close()
+        new_data = []
+        for show in sorted(shows_d.keys()):
+            new_data.append(shows_d[show])
+        f = open("shows",'w')
+        f.write(''.join(new_data))
+        f.close()
+        return "New show added."
+    else:
+        return "More options coming soon."
+
+def list_shows():
+    showlist = []
+    f = open("shows")
+    for line in f:
+        if len(line) >= 10: # minimum length for date and 1 character description..
+            d = date(int(line[4:8]),int(line[:2]),int(line[2:4]))
+            showlist.append(d.strftime("%b %d, %Y") + ":" + line[8:-1])
+    f.close()
+    return showlist
 
 def eightball():
     predictions = [ "As I see it, yes",
