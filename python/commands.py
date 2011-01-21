@@ -44,7 +44,7 @@ def halp(command):
     elif command == "?":
         return "Syntax: [question]?"
     else:
-        return "Available commands: !echo !quote !addquote !join !halp"
+        return "Available commands: !calc !echo !quote !addquote !join !halp. Type !halp [command] for more info"
 
 def calc(expr):
     print("Attempting to parse %s" % expr)
@@ -66,7 +66,7 @@ def calc(expr):
             print("Found constant %s" % const)
             return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
     for func in available_funcs:
-        match = re.search(r'(.*)' + func + r'\((.+)\)(.*)', expr)
+        match = re.search(r'(.*)' + func + r'\((.+?)\)(.*)', expr)
         if match:
             print("Found function %s" % func)
             eval_expr = 'math.' + func + '(' + match.group(2) + ')'
