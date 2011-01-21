@@ -1,9 +1,14 @@
 #!/usr/bin/python
 
+# MillerBot - commands
+# Return strings back to client, depending on different command input
+# Copyright 2011 Russell Miller
+
 import random,re,math
 from datetime import date
 
 def action(user,chan,msg):
+    """Direct the work flow around based on command given"""
     # simple commands
     if msg.lower() == 'quote':
         return (chan,quote())
@@ -29,6 +34,7 @@ def parse_send(msg):
     return channel,message
     
 def halp(command):
+    """Give help strings"""
     if command == "calc":
         return "Syntax: !calc [expression]. Mathematical expression. Can include ceil,fabs,factorial,floor,exp,pow,sqrt,log,cos,sin,tan,degrees,radians,pi,e."
     elif command == "shows":
@@ -47,7 +53,7 @@ def halp(command):
         return "Available commands: !calc !shows !quote !addquote !join !halp. Type !halp [command] for more info"
 
 def calc(expr):
-    print("Attempting to parse %s" % expr)
+    """Do math"""
     available_funcs = [
         'ceil',
         'fabs',
@@ -72,12 +78,10 @@ def calc(expr):
     for const in available_constants:
         match = re.search(r'(.*?)' + const + r'(.*)', expr)
         if match:
-            print("Found constant %s" % const)
             return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
     for func in available_funcs:
         match = re.search(r'(.*?)' + func + r'\((.+?)\)(.*)', expr)
         if match:
-            print("Found function %s" % func)
             eval_expr = 'math.' + func + '(' + match.group(2) + ')'
             return calc(match.group(1) + str(eval(eval_expr)) + match.group(3))
     match = re.search(r'[a-zA-Z_]',expr)
@@ -87,6 +91,7 @@ def calc(expr):
         return str(eval(expr))
 
 def quote():
+    """Get a random quote"""
     f = open("quotes")
     st = f.read()
     f.close()
@@ -95,6 +100,7 @@ def quote():
     return quotes[i]
 
 def shows(command):
+    """Add a new show"""
     if command.startswith("add"):
         show_string = command[3:].strip()
         show_date = date(int(show_string[4:8]),int(show_string[:2]),int(show_string[2:4]))
@@ -117,6 +123,7 @@ def shows(command):
         return "More options coming soon."
 
 def list_shows():
+    """List the current shows"""
     showlist = []
     f = open("shows")
     for line in f:
@@ -127,6 +134,7 @@ def list_shows():
     return showlist
 
 def eightball():
+    """Provide insight to questions"""
     predictions = [ "As I see it, yes",
                     "It is certain",
                     "It is decidedly so",

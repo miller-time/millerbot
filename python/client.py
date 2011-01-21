@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# MillerBot - client
+# interface with irc commands
+# Copyright 2011 Russell Miller
+
 import re,sys
 from OpenSSL import SSL
 from twisted.words.protocols import irc
@@ -40,6 +44,7 @@ class MillerBot(irc.IRCClient):
         print "Joined %s." % (channel,)
 
     def privmsg(self, user, channel, msg):
+        """One level deeper than commands.py. More power to call other irc commands here"""
         if not user:
             return
         username = user.split('!', 1)[0]

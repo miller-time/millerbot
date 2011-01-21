@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# MillerBot - bot
+# get stuff initialized and let the client take over
+# Copyright 2011 Russell Miller
+
 import re
 from twisted.internet import reactor
 from client import MillerBotFactory,MillerBotContextFactory

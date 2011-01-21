@@ -1,3 +1,20 @@
 Writing a simple Python IRC Bot.
 
 Uses Python Twisted Words.
+
+Working commands:
+quote - Pull from a collection of quotes and display a random one.
+eightball - Respond to questions with mysterious insight.
+shows - List shows I want to see, or add your own!
+join - Join a channel.
+halp - List help contents.
+
+Admin commands:
+leave - Leave a channel.
+quit - Quit the server.
+send - Send a message to a channel or user.
+
+In progress:
+calc - Calculator intepreter, uses math library.
+       bugs: nested parenthesis. requires a real lexer/parser.
+       	     currently just using regex.
