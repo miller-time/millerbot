@@ -3,4 +3,4 @@ PORT=9999
 NICK=millerbot
 OWNER=millertime
 DEFCHAN=millerbot-testing
-#CHANNELS=#cs386,#python
+CHANNELS=#cs386,#python
