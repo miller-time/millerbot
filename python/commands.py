@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import random
+import random,re,math
 
 def action(user,chan,msg):
     # simple commands
@@ -47,7 +47,35 @@ def halp(command):
         return "Available commands: !echo !quote !addquote !join !halp"
 
 def calc(expr):
-    return str(eval(expr))
+    print("Attempting to parse %s" % expr)
+    available_funcs = [
+        'sqrt',
+        'log',
+        'cos',
+        'sin',
+        'tan',
+    ]
+    available_constants = [
+        'pi',
+    ]
+    if not expr:
+        return ''
+    for const in available_constants:
+        match = re.search(r'(.*)' + const + r'(.*)', expr)
+        if match:
+            print("Found constant %s" % const)
+            return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
+    for func in available_funcs:
+        match = re.search(r'(.*)' + func + r'\((.+)\)(.*)', expr)
+        if match:
+            print("Found function %s" % func)
+            eval_expr = 'math.' + func + '(' + match.group(2) + ')'
+            return calc(match.group(1) + str(eval(eval_expr)) + match.group(3))
+    match = re.search(r'[a-zA-Z_]',expr)
+    if match:
+        return "Invalid characters detected in expression."
+    else:
+        return str(eval(expr))
 
 def quote():
     f = open("quotes")
