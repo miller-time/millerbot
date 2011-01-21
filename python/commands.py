@@ -32,31 +32,40 @@ def parse_send(msg):
     
 def halp(command):
     if command == "calc":
-        return "Syntax: !calc [expression]"
+        return "Syntax: !calc [expression]. Mathematical expression. Can include ceil,fabs,factorial,floor,exp,pow,sqrt,log,cos,sin,tan,degrees,radians,pi,e."
     if command == "echo":
-        return "Syntax: !echo [message]"
+        return "Syntax: !echo [message]. Stupid echo command."
     elif command == "quote":
-        return "Syntax: !quote"
+        return "Syntax: !quote. Display a random quote from someone famous."
     elif command == "addquote":
-        return "Syntax: !addquote [quote]"
+        return "Syntax: !addquote [quote]. Request a quote be added."
     elif command == "join":
         return "Syntax: !join [channel] [channel key]"
     elif command == "?":
-        return "Syntax: [question]?"
+        return "Syntax: [question]? Shake the magic eightball..."
     else:
         return "Available commands: !calc !echo !quote !addquote !join !halp. Type !halp [command] for more info"
 
 def calc(expr):
     print("Attempting to parse %s" % expr)
     available_funcs = [
+        'ceil',
+        'fabs',
+        'factorial',
+        'floor',
+        'exp',
+        'pow',
         'sqrt',
         'log',
         'cos',
         'sin',
         'tan',
+        'degrees',
+        'radians',
     ]
     available_constants = [
         'pi',
+        'e',
     ]
     if not expr:
         return ''
