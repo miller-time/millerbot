@@ -70,12 +70,12 @@ def calc(expr):
     if not expr:
         return ''
     for const in available_constants:
-        match = re.search(r'(.*)' + const + r'(.*)', expr)
+        match = re.search(r'(.*?)' + const + r'(.*)', expr)
         if match:
             print("Found constant %s" % const)
             return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
     for func in available_funcs:
-        match = re.search(r'(.*)' + func + r'\((.+?)\)(.*)', expr)
+        match = re.search(r'(.*?)' + func + r'\((.+?)\)(.*)', expr)
         if match:
             print("Found function %s" % func)
             eval_expr = 'math.' + func + '(' + match.group(2) + ')'
