@@ -12,8 +12,12 @@ def action(user,chan,msg):
     # simple commands
     if msg.lower() == 'quote':
         return (chan,quote())
+    elif msg.startswith('WhopBot'):
+        return (chan,'WhopBot: search !WhopBot')
     elif msg.lower().startswith('shows'):
         return (chan,shows(msg[5:].strip()))
+    elif msg.lower().startswith('bands'):
+        return (chan,bands(msg[5:].strip()))
     elif msg.lower().startswith('halp'):
         return (chan,halp(msg[4:].strip()))
     elif msg.startswith("calc"):
@@ -45,6 +49,8 @@ def halp(command):
         return "Syntax: !quote. Display a random quote from someone famous."
     elif command == "addquote":
         return "Syntax: !addquote [quote]. Request a quote be added."
+    elif command == "WhopBot":
+        return "make WhopBot spam the channel"
     elif command == "join":
         return "Syntax: !join [channel] [channel key]"
     elif command == "?":
@@ -78,12 +84,18 @@ def calc(expr):
     for const in available_constants:
         match = re.search(r'(.*?)' + const + r'(.*)', expr)
         if match:
-            return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
+            try:
+                return calc(match.group(1) + str(eval('math.' + const)) + match.group(2))
+            except SyntaxError:
+                return "You typed something wrong."
     for func in available_funcs:
         match = re.search(r'(.*?)' + func + r'\((.+?)\)(.*)', expr)
         if match:
             eval_expr = 'math.' + func + '(' + match.group(2) + ')'
-            return calc(match.group(1) + str(eval(eval_expr)) + match.group(3))
+            try:
+                return calc(match.group(1) + str(eval(eval_expr)) + match.group(3))
+            except SyntaxError:
+                return "You typed something wrong."
     match = re.search(r'[a-zA-Z_]',expr)
     if match:
         return "Invalid characters detected in expression."
@@ -103,6 +115,10 @@ def shows(command):
     """Add a new show"""
     if command.startswith("add"):
         show_string = command[3:].strip()
+        try:
+            a = int(show_string[:8])
+        except:
+            return "Invalid date. Please use a 8-digit number for MMDDYYYY"
         show_date = date(int(show_string[4:8]),int(show_string[:2]),int(show_string[2:4]))
         shows_d = {}
         shows_d[show_date] = show_string + '\n'
@@ -121,6 +137,19 @@ def shows(command):
         return "New show added."
     else:
         return "More options coming soon."
+
+def bands(command):
+    """List most popular #music bands"""
+    bands = []
+    f = open("bandrankings")
+    for line in f:
+        if len(bands)>5:
+            break
+        n = line.split(' ')[0]
+        bands.append(line[len(n)+1:-1])
+    f.close()
+    message = 'Top bands in this channel: ' + ', '.join(bands)
+    return message
 
 def list_shows():
     """List the current shows"""

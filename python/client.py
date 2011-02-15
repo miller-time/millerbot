@@ -48,6 +48,9 @@ class MillerBot(irc.IRCClient):
         if not user:
             return
         username = user.split('!', 1)[0]
+        # catch ++ events in #music
+        if channel == "#music":
+            plusplusmagic(msg)
         # non-message commands
         if msg.startswith("!join"):
             self.join(msg[6:])
@@ -70,11 +73,76 @@ class MillerBot(irc.IRCClient):
                 self.msg(channel, show)
         # all other commands
         elif msg.startswith('!'):
-            to_who,cmd = action(username,channel,msg[1:])
-            if cmd:
-                print("Telling " + to_who + " " + cmd)
+            result = action(username,channel,msg[1:])
+            if result:
+                to_who,cmd = result
+                log("[%s]*millerbot*: ->%s %s" % (channel,to_who,cmd))
                 self.msg(to_who,cmd)
-        print username + ": " + msg
+        log("[%s]%s: %s" % (channel,username,msg))
+
+def log(message):
+    """Append message to logfile"""
+    f = open("millerbot.log", 'a')
+    if f:
+        f.write(message+ '\n')
+        print(message)
+        f.close()
+    else:
+        print("Logging error.")
+
+def second(x):
+    return x[1]
+
+def plusplusmagic(msg):
+    """Regex for ++ to catch band names."""
+    match = re.findall(r'(\w+)\+\+', msg)   # catch words with ++
+    match2 = re.findall(r'\((.+?)\)\+\+', msg)  # catch (spaced words) with ++
+    if not match and not match2:
+        return
+    
+    # otherwise there are ++'s in the message!
+    bands = {}
+    # load existing data                                                                           
+    f = open("bandrankings")
+    for line in f:
+        n = line.split(' ')[0]  # number [space] bandname... n should be number
+        name = line[len(n)+1:-1]  # length of numberstring.. chop that off and the space.
+                                       # also chop \n off end
+        bands[name] = int(n)
+    f.close()
+
+    # add normal ++ words to dict
+    if len(match) > 1:
+        for thing in match:
+            if thing in bands:
+                bands[thing] += 1
+            else:
+                bands[thing] = 1
+    elif match:
+        if match[0] in bands:
+            bands[match[0]] += 1
+        else:
+            bands[match[0]] = 1
+
+    if len(match2) > 1:
+        for thing in match2:
+            if thing in bands:
+                bands[thing] += 1
+            else:
+                bands[thing] = 1
+    elif match2:
+        if match2[0] in bands:
+            bands[match2[0]] += 1
+        else:
+            bands[match2[0]] = 1
+
+    # ok all set, lets rewrite that file
+    f = open("bandrankings",'w')
+    output = ''
+    for band,rank in sorted(bands.items(), key=second, reverse=True):
+        output += str(rank) + ' ' + band + '\n'
+    f.write(output)
+    f.close()
 
 class MillerBotFactory(protocol.ClientFactory):
     protocol = MillerBot
