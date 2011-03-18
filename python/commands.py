@@ -12,8 +12,8 @@ def action(user,chan,msg):
     # simple commands
     if msg.lower() == 'quote':
         return (chan,quote())
-    elif msg.startswith('WhopBot'):
-        return (chan,'WhopBot: search !WhopBot')
+    elif msg.lower().startswith('ghetto-last'):
+        return (chan,"(" + msg[11:].strip() + ")++")
     elif msg.lower().startswith('shows'):
         return (chan,shows(msg[5:].strip()))
     elif msg.lower().startswith('bands'):
